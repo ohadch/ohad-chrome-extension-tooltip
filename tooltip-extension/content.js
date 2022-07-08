@@ -14,7 +14,6 @@ function getTooltipTextFromServerUsingPostRequest(selectedText) {
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
             const response = JSON.parse(xhr.responseText);
-            console.log(response);
             tooltipElement.innerText = response.text;
         }
     }
@@ -72,7 +71,6 @@ function positionTooltipOnPage(popup, x, y) {
     const intCoordX = x;
     const intCoordY = y;    // distance from click point to view port top
     const intDistanceScrolledUp = window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
-    console.log({intDistanceScrolledUp})
     // distance the page has been scrolled up from view port top
     let intPopupOffsetTop = intDistanceScrolledUp + intCoordY;
     // add the two for total distance from click point y to top of page

@@ -1,6 +1,9 @@
 let TOOLTIPS = []
 
-document.getElementsByTagName('body')[0].addEventListener('mouseup', function(e) {
+document.getElementsByTagName('body')[0].addEventListener('mouseup', onMouseUp)
+
+
+function onMouseUp(e) {
     // Clear the previous tooltip
     TOOLTIPS.forEach(_tooltip => _tooltip.remove())
     TOOLTIPS = []
@@ -16,40 +19,44 @@ document.getElementsByTagName('body')[0].addEventListener('mouseup', function(e)
 
     // Get the selected text's position
     const selectedRect = selection.getRangeAt(0).getBoundingClientRect();
+    const tooltip = tooltipFactory(selectedText)
 
-    // Create the tooltip
+    // Add the tooltip to the page
+    document.body.appendChild(tooltip);
+    TOOLTIPS.push(tooltip)
+
+    positionTooltipOnPage(tooltip, selectedRect.x, selectedRect.y);
+}
+
+function tooltipFactory(text) {
     const tooltip = document.createElement('span');
     tooltip.className = 'tooltip';
-    tooltip.innerText = selectedText;
+    tooltip.innerText = text;
     tooltip.style.backgroundColor = '#fff';
     tooltip.style.border = '1px solid #000';
     tooltip.style.borderRadius = '5px';
     tooltip.style.boxShadow = '0px 0px 5px #000';
     tooltip.style.padding = '5px';
 
-    document.body.appendChild(tooltip);
-    TOOLTIPS.push(tooltip)
-
-    positionPopupOnPage(tooltip, selectedRect.x, selectedRect.y);
-
-})
-
+    return tooltip;
+}
 
 // positon popup on page relative to cursor
 // position at time of click event
-function positionPopupOnPage(popup, x, y) {
+function positionTooltipOnPage(popup, x, y) {
 
-    var VPWH = [];                  // view port width / height
-    var intVPW, intVPH;             // view port width / height
-    var intCoordX = x;
-    var intCoordY = y;    // distance from click point to view port top
-    var intDistanceScrolledUp = document.body.scrollTop;
+    let VPWH = [];                  // view port width / height
+    let intVPW, intVPH;             // view port width / height
+    const intCoordX = x;
+    const intCoordY = y;    // distance from click point to view port top
+    const intDistanceScrolledUp = window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
+    console.log({intDistanceScrolledUp})
     // distance the page has been scrolled up from view port top
-    var intPopupOffsetTop = intDistanceScrolledUp + intCoordY;
+    let intPopupOffsetTop = intDistanceScrolledUp + intCoordY;
     // add the two for total distance from click point y to top of page
 
-    var intDistanceScrolledLeft = document.body.scrollLeft;
-    var intPopupOffsetLeft = intDistanceScrolledLeft + intCoordX;
+    const intDistanceScrolledLeft = document.body.scrollLeft;
+    let intPopupOffsetLeft = intDistanceScrolledLeft + intCoordX;
 
     VPWH = getViewport();    // view port Width/Height
     intVPW = VPWH[0];
@@ -67,12 +74,11 @@ function positionPopupOnPage(popup, x, y) {
 
     popup.style.top = intPopupOffsetTop + 'px';
     popup.style.left = intPopupOffsetLeft + 'px';
-}   // end fn positionPopupOnPage
+}   // end fn positionTooltipOnPage
 
 function getViewport() {
-
-    var viewPortWidth;
-    var viewPortHeight;
+    let viewPortWidth;
+    let viewPortHeight;
 
     // the more standards compliant browsers (mozilla/netscape/opera/IE7) use window.innerWidth and window.innerHeight
     if (typeof window.innerWidth != 'undefined') {

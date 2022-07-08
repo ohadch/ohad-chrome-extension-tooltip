@@ -1,12 +1,32 @@
-let TOOLTIPS = []
+const SERVER_HOST = "http://localhost:8500";
+const TOOLTIP_CONTENT_URL = SERVER_HOST + "/tooltip";
+
+
+let tooltipElement = undefined
 
 document.getElementsByTagName('body')[0].addEventListener('mouseup', onMouseUp)
 
 
-function onMouseUp(e) {
+function getTooltipTextFromServerUsingPostRequest(selectedText) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", TOOLTIP_CONTENT_URL, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            console.log(response);
+            tooltipElement.innerText = response.text;
+        }
+    }
+    xhr.send(JSON.stringify({ text: selectedText }));
+}
+
+async function onMouseUp(e) {
     // Clear the previous tooltip
-    TOOLTIPS.forEach(_tooltip => _tooltip.remove())
-    TOOLTIPS = []
+    if (tooltipElement) {
+        delete tooltipElement.remove();
+        tooltipElement = undefined;
+    }
 
     // Get the selected text
     const selection = window.getSelection();
@@ -19,13 +39,15 @@ function onMouseUp(e) {
 
     // Get the selected text's position
     const selectedRect = selection.getRangeAt(0).getBoundingClientRect();
-    const tooltip = tooltipFactory(selectedText)
+    tooltipElement = tooltipFactory(selectedText)
 
     // Add the tooltip to the page
-    document.body.appendChild(tooltip);
-    TOOLTIPS.push(tooltip)
+    document.body.appendChild(tooltipElement);
+    tooltipElement.innerText = "Loading..."
+    positionTooltipOnPage(tooltipElement, selectedRect.x, selectedRect.y);
 
-    positionTooltipOnPage(tooltip, selectedRect.x, selectedRect.y);
+    // Get the tooltip text from the server
+    await getTooltipTextFromServerUsingPostRequest(selectedText)
 }
 
 function tooltipFactory(text) {
